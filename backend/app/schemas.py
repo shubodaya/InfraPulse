@@ -1,5 +1,7 @@
 from datetime import datetime
 from typing import Literal
+from app.services.target_validation import validate_target
+from pydantic import model_validator
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -18,6 +20,12 @@ class MonitorBase(BaseModel):
     expected_dns_result: str | None = None
     enabled: bool = True
     tags: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_monitor_target(self):
+        validate_target(self.target, self.monitor_type)
+        return self
+
 
     @field_validator("tags", mode="before")
     @classmethod
@@ -56,6 +64,12 @@ class MonitorUpdate(BaseModel):
         if isinstance(value, list):
             return [str(tag).strip() for tag in value if str(tag).strip()]
         return []
+
+    @model_validator(mode="after")
+    def validate_updated_target(self):
+        if self.target is not None and self.monitor_type is not None:
+            validate_target(self.target, self.monitor_type)
+        return self
 
 
 class CheckResultRead(BaseModel):
