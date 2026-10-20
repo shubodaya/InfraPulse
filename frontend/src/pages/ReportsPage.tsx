@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Download } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Download, RefreshCw, TriangleAlert } from "lucide-react";
 import { api, type ReportPeriod, type SummaryReport } from "../api";
 import { SLAReport } from "../components/SLAReport";
 
@@ -9,25 +9,23 @@ export function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const [availability, summaryData] = await Promise.all([api.getAvailability(), api.getSummary()]);
-        setPeriods(availability);
-        setSummary(summaryData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load reports");
-      } finally {
-        setLoading(false);
-      }
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [availability, summaryData] = await Promise.all([api.getAvailability(), api.getSummary()]);
+      setPeriods(availability);
+      setSummary(summaryData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load reports");
+    } finally {
+      setLoading(false);
     }
-    void load();
   }, []);
 
-  if (loading) return <div className="panel p-8 text-sm text-stone-500">Loading SLA report...</div>;
-  if (error) return <div className="panel border-rose-200 bg-rose-50 p-6 text-rose-700">{error}</div>;
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
     <div className="space-y-6">
@@ -50,7 +48,21 @@ export function ReportsPage() {
         </a>
       </div>
 
-      <SLAReport periods={periods} />
+      {loading && <div className="panel p-8 text-sm text-slate-500">Loading SLA report...</div>}
+      {error && !loading && (
+        <section className="panel border-rose-200 bg-rose-50 p-6 sm:p-8" aria-live="polite">
+          <div className="flex items-start gap-4">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-700"><TriangleAlert className="h-5 w-5" aria-hidden /></span>
+            <div>
+              <h2 className="text-lg font-bold text-rose-950">Reporting data is unavailable</h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-rose-800">{error}</p>
+              <p className="mt-2 text-sm text-rose-700">The Reports page needs both the availability and summary endpoints. Once the API is available, retry the request.</p>
+              <button className="focus-ring mt-5 inline-flex items-center gap-2 rounded-lg bg-rose-700 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-60" onClick={() => void load()} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Retry</button>
+            </div>
+          </div>
+        </section>
+      )}
+      {!loading && !error && <SLAReport periods={periods} />}
     </div>
   );
 }

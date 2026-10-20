@@ -22,11 +22,17 @@ Network support and cybersecurity teams need clear answers during incidents: wha
 
 ## Screenshots
 
-Add screenshots here after running the app locally:
+### Network overview
 
-- Dashboard: `docs/screenshots/dashboard.png`
-- Monitor detail: `docs/screenshots/monitor-detail.png`
-- SLA report: `docs/screenshots/reports.png`
+![InfraPulse network overview](docs/dashboard.png)
+
+### Monitor detail
+
+![InfraPulse monitor detail](docs/monitor-detail.png)
+
+### SLA reports
+
+![InfraPulse SLA reports](docs/reports.png)
 
 ## Architecture
 

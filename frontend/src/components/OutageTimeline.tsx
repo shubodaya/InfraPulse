@@ -22,7 +22,7 @@ export function OutageTimeline({ outages }: Props) {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={outage.status === "active" ? "down" : "up"} />
-              <span className="rounded-md bg-stone-100 px-2 py-1 text-xs font-semibold uppercase text-stone-600">
+              <span className={`rounded-md px-2 py-1 text-xs font-semibold uppercase ${outage.severity === "critical" || outage.severity === "high" ? "bg-rose-50 text-rose-700" : outage.severity === "medium" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"}`}>
                 {outage.severity}
               </span>
             </div>
