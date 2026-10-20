@@ -21,7 +21,7 @@ export function AlertHistory({ alerts }: Props) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-semibold text-stone-950">{alert.title}</p>
-              <span className="rounded bg-stone-100 px-2 py-0.5 text-xs font-semibold uppercase text-stone-600">
+              <span className={`rounded px-2 py-0.5 text-xs font-semibold uppercase ${alert.severity === "critical" || alert.severity === "high" ? "bg-rose-50 text-rose-700" : alert.severity === "medium" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"}`}>
                 {alert.severity}
               </span>
             </div>

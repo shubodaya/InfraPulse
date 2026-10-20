@@ -1,4 +1,13 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+// Vite proxies relative requests during local development. An absolute value can
+// still be provided by Docker or a deployed environment.
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+
+export class ApiConnectionError extends Error {
+  constructor() {
+    super("Unable to reach the InfraPulse API. Check that the backend is running and try again.");
+    this.name = "ApiConnectionError";
+  }
+}
 
 export type Status = "up" | "degraded" | "down" | "unknown";
 
@@ -115,13 +124,18 @@ export type NewMonitorPayload = {
 };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...init?.headers
-    },
-    ...init
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...init?.headers
+      },
+      ...init
+    });
+  } catch {
+    throw new ApiConnectionError();
+  }
 
   if (!response.ok) {
     const message = await response.text();
@@ -136,6 +150,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  getHealth: () => request<{ status: string; service: string }>("/health"),
   listMonitors: () => request<Monitor[]>("/api/monitors"),
   createMonitor: (payload: NewMonitorPayload) =>
     request<Monitor>("/api/monitors", { method: "POST", body: JSON.stringify(payload) }),

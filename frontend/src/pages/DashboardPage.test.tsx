@@ -65,7 +65,8 @@ describe("DashboardPage", () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByText("Network Monitoring Dashboard")).toBeInTheDocument();
+    expect(await screen.findByText("Network health at a glance")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Search monitors" })).toBeInTheDocument();
     expect(screen.getByText("Core Router")).toBeInTheDocument();
     await waitFor(() => expect(screen.getAllByText("99.90%").length).toBeGreaterThan(0));
   });

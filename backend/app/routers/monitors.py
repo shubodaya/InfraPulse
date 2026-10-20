@@ -11,6 +11,7 @@ from app.models import CheckResult, Monitor, Outage
 from app.schemas import CheckResultRead, MonitorCreate, MonitorRead, MonitorUpdate
 from app.services.monitor_runner import run_monitor_check, schedule_all_monitors
 from app.services.sla_calculator import calculate_monitor_sla
+from app.services.target_validation import validate_target
 
 router = APIRouter(prefix="/api/monitors", tags=["monitors"])
 
@@ -68,18 +69,37 @@ def get_monitor(monitor_id: int, db: Session = Depends(get_db)) -> MonitorRead:
     return monitor_to_read(db, monitor)
 
 
+
 @router.put("/{monitor_id}", response_model=MonitorRead)
-def update_monitor(monitor_id: int, payload: MonitorUpdate, db: Session = Depends(get_db)) -> MonitorRead:
+def update_monitor(
+    monitor_id: int,
+    payload: MonitorUpdate,
+    db: Session = Depends(get_db),
+) -> MonitorRead:
     monitor = db.get(Monitor, monitor_id)
     if not monitor:
         raise HTTPException(status_code=404, detail="Monitor not found")
-    for field, value in payload.model_dump(exclude_unset=True).items():
+
+    updates = payload.model_dump(exclude_unset=True)
+
+    # Validate the final target against the final monitor type.
+    target = updates.get("target", monitor.target)
+    monitor_type = updates.get("monitor_type", monitor.monitor_type)
+
+    try:
+        validate_target(target, monitor_type)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    for field, value in updates.items():
         setattr(monitor, field, value)
+
     monitor.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(monitor)
     schedule_all_monitors()
     return monitor_to_read(db, monitor)
+
 
 
 @router.delete("/{monitor_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)

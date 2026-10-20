@@ -22,13 +22,17 @@ InfraPulse brings these workflows together through scheduled health checks, outa
 
 ## Screenshots
 
-<!-- Keep your existing screenshot links here if they already exist. -->
+### Network overview
 
-| Dashboard | Monitor Details | Availability Reports |
-|---|---|---|
-| ![InfraPulse Dashboard](docs/screenshots/dashboard.png) | ![Monitor Details](docs/screenshots/monitor-detail.png) | ![Availability Reports](docs/screenshots/reports.png) |
+![InfraPulse network overview](docs/dashboard.png)
 
-> If these screenshots do not exist yet, replace the paths above with your actual image locations after capturing screenshots of the running application.
+### Monitor detail
+
+![InfraPulse monitor detail](docs/monitor-detail.png)
+
+### SLA reports
+
+![InfraPulse SLA reports](docs/reports.png)
 
 ## Features
 
